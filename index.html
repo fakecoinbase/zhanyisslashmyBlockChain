@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style type="text/css">
+    table, th, td{
+        border: 1px solid black;
+    }
+    table {
+        width: 100%;
+        table-layout: fixed;
+        word-break: break-all;
+    }
+    tr {
+        height: 100px;
+    }
+    </style>
+    <button id="btn" type="button">获取上一次的信息</button>
+    <button id="btn1" type="button">A来挖矿</button>
+    <div>
+        <h1 id="info"></h1>
+        <p>index: <span id="index"></span></p>
+        <p>timestamp: <span id="timestamp"></span></p>
+        <p>previousHash: <span id="previousHash"></span></p>
+        <p>hash: <span id="hash"></span></p>
+        <p>nonce: <span id="nonce"></span></p>
+        <p>diffculty: <span id="diffculty"></span></p>
+        <p>transactions: </p>
+        <div id="trans"></div>
+    </div>
+    <script>
+    var ws = new WebSocket('ws://localhost:2333');
+
+    var flag = false;
+
+    ws.onopen = function() {
+        document.getElementById('btn').onclick = function(){
+            flag = true;
+            ws.send('1')
+        }
+        document.getElementById('btn1').onclick = function(){
+            ws.send('2')
+        }
+    }
+
+    
+
+    ws.onmessage = function(e){
+        console.log(e);
+        JSON.parse(e.data, function(k,v){
+            // console.log(k,v);
+            if(k == 'index'){
+                document.getElementById('index').innerHTML=v;
+            }else if(k == 'timestamp'){
+                document.getElementById('timestamp').innerHTML=v;
+            }else if(k == 'previousHash'){
+                document.getElementById('previousHash').innerHTML=v;
+            }else if(k == 'hash'){
+                document.getElementById('hash').innerHTML=v;
+            }else if(k == 'nonce'){
+                document.getElementById('nonce').innerHTML=v;
+            }else if(k == 'difficulty'){
+                document.getElementById('diffculty').innerHTML=v;
+            }
+        });
+        let transactions = JSON.parse(e.data).transactions;
+        let tablestr = "<table><tr><th>preid</th><th>preindex</th><th>signature</th><th>ToAddress</th><th>Amount</th><th>Id</th></tr>"
+        for(const key in transactions){
+            console.log(transactions[key].preid)
+            tablestr += `<tr><td>${transactions[key].preid}</td><td>${transactions[key].preindex}</td><td>${transactions[key].signature}</td><td>${transactions[key].toAdd}</td><td>${transactions[key].amount}</td><td>${transactions[key].id}</td></tr>`
+        };
+        tablestr += "</table>";
+        document.getElementById('trans').innerHTML=tablestr;
+        let infoname = flag ? '最新区块: ':'有人挖矿啦，新的区块是: ';
+        document.getElementById('info').innerHTML=infoname;
+        flag=false;
+        // let p = document.createElement('p');
+        // p.innerHTML = e.data;
+        // document.body.appendChild(p)
+        // document.body.innerHTML += `<p>${e.data}</p>`
+    }
+    // ws.onopen = function(){
+    //     ws.send('来自客户端的信息')
+    // }
+
+    // ws.onmessage = function(e) {
+    //     console.log(e.data);
+    // }
+    </script>
+</body>
+</html>
