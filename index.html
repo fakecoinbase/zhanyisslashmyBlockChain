@@ -1,26 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <style type="text/css">
-    table, th, td{
-        border: 1px solid black;
-    }
-    table {
-        width: 100%;
-        table-layout: fixed;
-        word-break: break-all;
-    }
-    tr {
-        height: 100px;
-    }
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+            word-break: break-all;
+        }
+
+        tr {
+            height: 100px;
+        }
     </style>
     <button id="btn" type="button">获取上一次的信息</button>
     <button id="btn1" type="button">A来挖矿</button>
+    <button id="btn2" type="button">B来挖矿</button>
+    <button id="btn3" type="button">C来挖矿</button>
+    <span>暂时不允许创建账户</span>
+    <br><br>
+    <!-- 互相转账功能尚未完成 -->
+    <span>发送者：<input type="text" id="sender" name="sender"></span>
+    <span>金额：<input type="number" id="amount"></span>
+    <span>接收者：<input type="text" id="reciever" name="reciever"></span>
+    <button id="btn4" type="button" disabled='disabled'>转账</button>
+    <br>
+    <span id="msg" style="color: red;"></span>
+    <span id="msg1" style="color: red;"></span>
     <div>
         <h1 id="info"></h1>
         <p>index: <span id="index"></span></p>
@@ -33,56 +51,94 @@
         <div id="trans"></div>
     </div>
     <script>
-    var ws = new WebSocket('ws://localhost:2333');
-
-    var flag = false;
-
-    ws.onopen = function() {
-        document.getElementById('btn').onclick = function(){
-            flag = true;
-            ws.send('1')
-        }
-        document.getElementById('btn1').onclick = function(){
-            ws.send('2')
-        }
-    }
-
-    
-
-    ws.onmessage = function(e){
-        console.log(e);
-        JSON.parse(e.data, function(k,v){
-            // console.log(k,v);
-            if(k == 'index'){
-                document.getElementById('index').innerHTML=v;
-            }else if(k == 'timestamp'){
-                document.getElementById('timestamp').innerHTML=v;
-            }else if(k == 'previousHash'){
-                document.getElementById('previousHash').innerHTML=v;
-            }else if(k == 'hash'){
-                document.getElementById('hash').innerHTML=v;
-            }else if(k == 'nonce'){
-                document.getElementById('nonce').innerHTML=v;
-            }else if(k == 'difficulty'){
-                document.getElementById('diffculty').innerHTML=v;
+        let span = document.getElementById('msg');
+        document.querySelector('[name="sender"]').addEventListener("keyup", function () {
+            if (/^[A-C]$/.test(this.value)) {
+                span.innerHTML = '';
+                document.getElementById('btn4').disabled = '';
+            } else {
+                span.innerHTML = '发送者只能是A或B或C';
             }
-        });
-        let transactions = JSON.parse(e.data).transactions;
-        let tablestr = "<table><tr><th>preid</th><th>preindex</th><th>signature</th><th>ToAddress</th><th>Amount</th><th>Id</th></tr>"
-        for(const key in transactions){
-            console.log(transactions[key].preid)
-            tablestr += `<tr><td>${transactions[key].preid}</td><td>${transactions[key].preindex}</td><td>${transactions[key].signature}</td><td>${transactions[key].toAdd}</td><td>${transactions[key].amount}</td><td>${transactions[key].id}</td></tr>`
-        };
-        tablestr += "</table>";
-        document.getElementById('trans').innerHTML=tablestr;
-        let infoname = flag ? '最新区块: ':'有人挖矿啦，新的区块是: ';
-        document.getElementById('info').innerHTML=infoname;
-        flag=false;
-        // let p = document.createElement('p');
-        // p.innerHTML = e.data;
-        // document.body.appendChild(p)
-        // document.body.innerHTML += `<p>${e.data}</p>`
-    }
+        })
+        let span1 = document.getElementById('msg1');
+        document.querySelector('[name="reciever"]').addEventListener("keyup", function () {
+            if (/^[A-C]$/.test(this.value)) {
+                span1.innerHTML = '';
+                document.getElementById('btn4').disabled = '';
+            } else {
+                span1.innerHTML = '接收者者只能是A或B或C';
+            }
+        })
+
+        var ws = new WebSocket('ws://localhost:2333');
+
+        var flag = false;
+
+        ws.onopen = function () {
+            document.getElementById('btn').onclick = function () {
+                flag = true;
+                ws.send('a')
+            }
+            document.getElementById('btn1').onclick = function () {
+                ws.send('b')
+            }
+            document.getElementById('btn2').onclick = function () {
+                ws.send('c')
+            }
+            document.getElementById('btn3').onclick = function () {
+                ws.send('d')
+            }
+            document.getElementById('btn4').onclick = function () {
+                let sender = document.getElementById('sender').value;
+                let amount = document.getElementById('amount').value;
+                let reciever = document.getElementById('reciever').value;
+                if (sender == '' || amount == '' || reciever == '') {
+                    span.innerHTML = '不能为空';
+                } else if (/^[A-C]$/.test(sender) && /^[A-C]$/.test(reciever)) {
+                    ws.send(`${sender}#${amount}#${reciever}`);
+                } else{
+                    span.innerHTML = '发送者或接收者不匹配'
+                }
+
+            }
+        }
+
+
+
+        ws.onmessage = function (e) {
+            console.log(e);
+            JSON.parse(e.data, function (k, v) {
+                // console.log(k,v);
+                if (k == 'index') {
+                    document.getElementById('index').innerHTML = v;
+                } else if (k == 'timestamp') {
+                    document.getElementById('timestamp').innerHTML = v;
+                } else if (k == 'previousHash') {
+                    document.getElementById('previousHash').innerHTML = v;
+                } else if (k == 'hash') {
+                    document.getElementById('hash').innerHTML = v;
+                } else if (k == 'nonce') {
+                    document.getElementById('nonce').innerHTML = v;
+                } else if (k == 'difficulty') {
+                    document.getElementById('diffculty').innerHTML = v;
+                }
+            });
+            let transactions = JSON.parse(e.data).transactions;
+            let tablestr = "<table><tr><th>preid</th><th>preindex</th><th>signature</th><th>ToAddress</th><th>Amount</th><th>Id</th></tr>"
+            for (const key in transactions) {
+                console.log(transactions[key].preid)
+                tablestr += `<tr><td>${transactions[key].preid}</td><td>${transactions[key].preindex}</td><td>${transactions[key].signature}</td><td>${transactions[key].toAdd}</td><td>${transactions[key].amount}</td><td>${transactions[key].id}</td></tr>`
+            };
+            tablestr += "</table>";
+            document.getElementById('trans').innerHTML = tablestr;
+            let infoname = flag ? '最新区块: ' : '有人挖矿啦，新的区块是: ';
+            document.getElementById('info').innerHTML = infoname;
+            flag = false;
+            // let p = document.createElement('p');
+            // p.innerHTML = e.data;
+            // document.body.appendChild(p)
+            // document.body.innerHTML += `<p>${e.data}</p>`
+        }
     // ws.onopen = function(){
     //     ws.send('来自客户端的信息')
     // }
@@ -92,4 +148,5 @@
     // }
     </script>
 </body>
+
 </html>

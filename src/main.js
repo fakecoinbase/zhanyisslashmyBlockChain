@@ -28,7 +28,8 @@ class Transaction {
     //验证签名是否正确
     isSignValid(pbkey, doc) {
         const publicKey = ec.keyFromPublic(pbkey, 'hex')
-        console.log("验证签名为： " + publicKey.verify(doc, this.signature))
+        console.log("验证签名为： " + publicKey.verify(doc, this.signature));
+        return publicKey.verify(doc, this.signature);
     }
 }
 
@@ -77,7 +78,7 @@ class Chain {
         this.minerReward = 100;
         this.previousAdjustmentBlockIndex = 1;
         this.difficultyAdjustmentInterval = 2;
-        this.blockGenerationInterval = 20;
+        this.blockGenerationInterval = 1500;
         //历史交易池
         this.doneTransactionRecords = [];
     }
