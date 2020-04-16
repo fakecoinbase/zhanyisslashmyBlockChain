@@ -87,7 +87,7 @@ class Chain {
     createAcountWithPublicKey(...args) {
         let result = [...args];
         for (const addr of result) {
-            const initTransaction = new Transaction('', '', 'system', addr, 50);
+            const initTransaction = new Transaction(++this.transactionPool.length, '', 'system', addr, 50);
             this.addTransaction(initTransaction)
         }
     }
