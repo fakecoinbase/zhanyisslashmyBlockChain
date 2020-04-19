@@ -46,7 +46,7 @@ class Block {
 
     //计算Hash
     computeHash() {
-        return sha256(this.index + this.previousHash + this.nonce + this.timestamp + JSON.stringify(this.transactions)).toString()
+        return sha256(this.index + this.previousHash + this.difficulty + this.nonce + this.timestamp + JSON.stringify(this.transactions)).toString()
     }
 
     //开头前n位为0的hash
@@ -81,13 +81,14 @@ class Chain {
         this.blockGenerationInterval = 1500;
         //历史交易池
         this.doneTransactionRecords = [];
+        this.k = 0
     }
 
     //创建账户 初始金额50元
     createAcountWithPublicKey(...args) {
         let result = [...args];
         for (const addr of result) {
-            const initTransaction = new Transaction(++this.transactionPool.length, '', 'system', addr, 50);
+            const initTransaction = new Transaction(this.k++, '', 'system', addr, 50);
             this.addTransaction(initTransaction)
         }
     }
